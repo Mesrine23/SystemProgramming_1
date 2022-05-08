@@ -12,23 +12,41 @@ using namespace std;
 #define SIZE 4096
 
 
-int main() {
+int main(int argc, char *argv[]) {
+
+    int named_pipe;
+    if((named_pipe=open(argv[1],O_RDONLY))==-1){
+        perror("{Worker} cannot open named pipe");
+        exit(1);
+    }
+    int ret1;
+    char test[4096];
+    ret1=read(named_pipe,test, sizeof(test)-1);
+    test[ret1]=0x00;
+    cout << "{Worker} read from named pipe: " << test << endl;
+
+    //exit(1);
+
     int fd,fd1,ret;
     char buffer[SIZE];
     string http = "http://";
-    string writefile = "test.txt";
+    //string writefile = "test.txt";
+    string temp=test;
+    string writefile = "out_files/" + temp;
     string readfile = "./";
-    readfile.append(writefile);
+    readfile.append(temp);
     writefile.append(".out");
     char file[readfile.length()+1];
     strcpy(file,readfile.c_str());
 
-    if ( (fd = open(file, O_RDONLY, 0)) < 0 )
+    if ( (fd = open(file, O_RDONLY, 0)) < 0 ) {
         perror("open() failed for 'text' file");
+        exit(1);
+    }
 
     ret = read(fd, buffer, sizeof(buffer)-1);
     buffer[ret] = 0x00;
-    printf("\n%s\n\n",buffer);
+    //printf("\n%s\n\n",buffer);
 
     if(close(fd)!=0)
         perror("close() failed for 'text' file");
@@ -80,7 +98,7 @@ int main() {
         //cout << "url: '" << data[i] << "' found " << data_counter[i] << " times." << endl;
     }
     s += "\0";
-    cout << s << endl << endl;
+    cout << s << endl;
     //return 0;
     char file1[writefile.length()+1];
     strcpy(file1,writefile.c_str());
@@ -93,6 +111,9 @@ int main() {
 
     if(close(fd1)!=0)
         perror("close() failed for 'out' file");
+
+    if(close(named_pipe)!=0)
+        perror("{Worker} close() failed for named pipe");
 
     return 0;
 }
