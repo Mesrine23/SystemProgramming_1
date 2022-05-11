@@ -27,19 +27,16 @@ static void sig_handler (int arg) {
 }
 
 int main () {
-    //string fifo = "./named_pipes/";
-    string name = "./named_pipes/" + to_string(getpid());
-    char work_pipe[20];
-    //char test1[] = "12123213213";
-    strcpy(work_pipe,name.c_str());
-    if((mkfifo(work_pipe,0666))==-1)
-    {
-        perror("mkfifo");
-        exit(1);
-    }
-    cout << "created named pipe" << endl;
-    //int test3 = atoi(test1);
-    //cout << test3 << endl;
+    string s = "50865|6";
+    size_t pos = 0;
+    pos = s.find("|");
+    int worker = atoi(s.substr(0,pos).c_str());
+    s.erase(0,pos+1);
+    int fd = atoi(s.c_str());
+    cout << "worker: " << worker << endl;
+    cout << "file desc: " << fd << endl;
+    string file_desc = to_string(worker) + "|" + to_string(fd);
+    cout << "string concat: " << file_desc << endl;
     exit(0);
 
     int pid;

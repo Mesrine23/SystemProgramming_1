@@ -14,34 +14,34 @@ using namespace std;
 
 #define SIZE 4096
 
-
 int main(int argc, char *argv[]) {
 
     int named_pipe;
     string temp1 = "./named_pipes/" + to_string(getpid());
     char work_pipe[25];
     strcpy(work_pipe,temp1.c_str());
-    if((named_pipe=open(work_pipe,O_RDONLY))==-1){
+
+    if((named_pipe=open(work_pipe,O_RDONLY))==-1) {
         perror("{Worker} cannot open named pipe");
         exit(1);
     }
+
+    int while_counter=0;
+
     while(1) {
         int ret1;
-        char test[4096] = {};
+        char test[25] = {};
         ret1 = read(named_pipe, test, sizeof(test) - 1);
-        test[ret1] = 0x00;
-        cout << "{Worker} read from named pipe: " << test << endl;
 
         int fd, fd1, ret;
         char buffer[SIZE];
         string http = "http://";
-        //string writefile = "test.txt";
         string temp = test;
         string writefile = "out_files/" + temp;
         string readfile = "./";
         readfile.append(temp);
         writefile.append(".out");
-        char file[readfile.length() + 1];
+        char file[readfile.length() + 1]={};
         strcpy(file, readfile.c_str());
 
         if ((fd = open(file, O_RDONLY, 0)) < 0) {
@@ -51,7 +51,6 @@ int main(int argc, char *argv[]) {
 
         ret = read(fd, buffer, sizeof(buffer) - 1);
         buffer[ret] = 0x00;
-        //printf("\n%s\n\n",buffer);
 
         if (close(fd) != 0)
             perror("close() failed for 'text' file");
@@ -65,7 +64,6 @@ int main(int argc, char *argv[]) {
         while (my_str >> word) {
             string first_seven = word.substr(0, 7);
             if (first_seven == http) {
-                //cout << "URL before: " << word << endl;
                 if (word[word.size() - 1] == '.' || word[word.size() - 1] == ',')
                     word.pop_back();
                 word.erase(0, 7);
@@ -74,7 +72,7 @@ int main(int argc, char *argv[]) {
                     word.erase(0, 4);
                 }
 
-                char temp[word.length() + 1];
+                char temp[word.length() + 1]={};
                 strcpy(temp, word.c_str());
                 char *test = strchr(temp, '/');
                 if (test != NULL) {
@@ -91,33 +89,27 @@ int main(int argc, char *argv[]) {
                     data.push_back(word);
                     data_counter.push_back(1);
                 }
-                //cout << "URL after: " << word << endl << endl;
             }
         }
-        cout << endl;
         string s = "";
         for (int i = 0; i < data.size(); ++i) {
             s += data[i] + " " + to_string(data_counter[i]) + "\n";
             //cout << "url: '" << data[i] << "' found " << data_counter[i] << " times." << endl;
         }
         s += "\0";
-        cout << s << endl;
-        //return 0;
-        char file1[writefile.length() + 1];
+        char file1[writefile.length() + 1]={};
         strcpy(file1, writefile.c_str());
         if ((fd1 = open(file1, O_WRONLY | O_CREAT, 0644)) < 0)
             perror("open() failed for 'out' file");
 
-        char write_text[s.length() + 1];
+        char write_text[s.length() + 1]={};
         strcpy(write_text, s.c_str());
         write(fd1, write_text, strlen(write_text));
 
         if (close(fd1) != 0)
             perror("close() failed for 'out' file");
 
-//        if (close(named_pipe) != 0)
-//            perror("{Worker} close() failed for named pipe");
-
         raise(SIGSTOP);
     }
+
 }
