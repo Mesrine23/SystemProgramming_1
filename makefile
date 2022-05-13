@@ -1,4 +1,4 @@
-all: home clean compile
+all: clean compile
 
 compile:
 	g++ worker.cpp -o worker
@@ -7,5 +7,5 @@ compile:
 clean:
 	rm -f worker sniffer ./named_pipes/* ./out_files/*
 	
-home:
-	mv *.txt /home/mesrine/Desktop/
+move:
+	mv *.txt ..
